@@ -42,6 +42,6 @@ If you don't want the color picker to include the "Show Colors..." button (click
 
 ```swift
 ...
-MatrixColorSelector(selection: $color, noMoreColors: false)
+MatrixColorSelector("some-text",selection: $color, noMoreColors: false)
 ...
 ```  
