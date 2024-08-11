@@ -32,7 +32,7 @@ struct ContentView: View {
     @State var color: Color = .black
     
     var body: some View {
-        MatrixColorSelector(selection: $color)
+        MatrixColorSelector("Select Color:", selection: $color)
     }
 }
 ```

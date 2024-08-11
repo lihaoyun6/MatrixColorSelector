@@ -6,38 +6,43 @@ import SwiftUI
 public struct MatrixColorSelector: View {
     @Binding var selection: Color
     @State private var popover: Bool = false
+    var titleKey: LocalizedStringKey
     var noMoreColors: Bool
     
-    public init(selection: Binding<Color>, noMoreColors: Bool = false) {
+    public init(_ titleKey: LocalizedStringKey, selection: Binding<Color>, noMoreColors: Bool = false) {
+        self.titleKey = titleKey
         self._selection = selection
         self.noMoreColors = noMoreColors
     }
     
     public var body: some View {
-        Button(action: {
-            popover = true
-        }, label: {
-            ZStack {
-                RoundedRectangle(cornerRadius: 5, style: .continuous)
+        HStack {
+            if titleKey != "" { Text(titleKey) }
+            Button(action: {
+                popover = true
+            }, label: {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 5, style: .continuous)
                     .fill(popover ? Color(NSColor(white: 0.8, alpha: 1)) : Color(NSColor.controlColor))
                     .shadow(radius: 1, y: 0.5)
-                RoundedRectangle(cornerRadius: 2, style: .continuous)
+                    RoundedRectangle(cornerRadius: 2, style: .continuous)
                     .fill(selection)
                     .frame(width: 38, height: 17)
                     .overlay(
                         RoundedRectangle(cornerRadius: 2, style: .continuous)
-                            .stroke(lineWidth: 1)
-                            .opacity(0.25)
+                        .stroke(lineWidth: 1)
+                        .opacity(0.25)
                     )
                     .mask(RoundedRectangle(cornerRadius: 2, style: .continuous))
                     //.padding([.leading, .trailing], -5).padding([.top, .bottom], 2)
+                }
+                
+            })
+            .buttonStyle(.plain)
+            .frame(width: 44, height: 23)
+            .popover(isPresented: $popover, arrowEdge: .bottom) {
+                MatrixColorSelectorView(selection: $selection, noMoreColors: noMoreColors).padding(10)
             }
-            
-        })
-        .buttonStyle(.plain)
-        .frame(width: 44, height: 23)
-        .popover(isPresented: $popover, arrowEdge: .bottom) {
-            MatrixColorSelectorView(selection: $selection, noMoreColors: noMoreColors).padding(10)
         }
     }
 }
