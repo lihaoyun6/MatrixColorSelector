@@ -42,6 +42,6 @@ struct ContentView: View {
 
 ```swift
 ...
-MatrixColorSelector("some-text",selection: $color, noMoreColors: false)
+MatrixColorSelector("some-text", selection: $color, noMoreColors: false)
 ...
 ```  

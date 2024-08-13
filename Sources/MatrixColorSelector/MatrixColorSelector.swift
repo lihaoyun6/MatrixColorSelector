@@ -2,6 +2,7 @@
 // https://docs.swift.org/swift-book
 
 import SwiftUI
+import AppKit
 
 public struct MatrixColorSelector: View {
     @Binding var selection: Color
@@ -22,23 +23,23 @@ public struct MatrixColorSelector: View {
                 popover = true
             }, label: {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 5, style: .continuous)
-                    .fill(popover ? Color(NSColor(white: 0.8, alpha: 1)) : Color(NSColor.controlColor))
-                    .shadow(radius: 1, y: 0.5)
+                    //RoundedRectangle(cornerRadius: 5, style: .continuous)
+                    //.fill(popover ? Color(NSColor(white: 0.8, alpha: 1)) : Color(NSColor.controlColor))
+                    //.shadow(radius: 1, y: 0.5)
                     RoundedRectangle(cornerRadius: 2, style: .continuous)
-                    .fill(selection)
-                    .frame(width: 38, height: 17)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 2, style: .continuous)
-                        .stroke(lineWidth: 1)
-                        .opacity(0.25)
-                    )
-                    .mask(RoundedRectangle(cornerRadius: 2, style: .continuous))
-                    //.padding([.leading, .trailing], -5).padding([.top, .bottom], 2)
+                        .fill(selection)
+                        .frame(width: 38, height: 17)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 2, style: .continuous)
+                            .stroke(lineWidth: 1)
+                            .opacity(0.25)
+                        )
+                        .mask(RoundedRectangle(cornerRadius: 2, style: .continuous))
+                        .padding([.leading, .trailing], -5).padding([.top, .bottom], 2)
                 }
-                
             })
-            .buttonStyle(.plain)
+            //.buttonStyle(.plain)
+            .foregroundColor(.red)
             .frame(width: 44, height: 23)
             .popover(isPresented: $popover, arrowEdge: .bottom) {
                 MatrixColorSelectorView(selection: $selection, noMoreColors: noMoreColors).padding(10)
@@ -48,6 +49,8 @@ public struct MatrixColorSelector: View {
 }
 
 public struct MatrixColorSelectorView: View {
+    @Environment(\.presentationMode) var presentationMode
+    @State private var panel: Bool = false
     @Binding var selection: Color
     var noMoreColors: Bool
     private var colorPreset: [Color] = [.red, Color(.orange), Color(.yellow), Color(.green), Color(.cyan), Color(.blue), Color(NSColor.magenta), Color(.purple), Color(.brown), .white, .gray, .black]
@@ -91,20 +94,15 @@ public struct MatrixColorSelectorView: View {
                 }
             }
             if !noMoreColors {
-                Button(action: {}, label: { Text("Show Colors...").frame(width: 165) })
-                    .focusable(false)
-                    .overlay(
-                        ColorPicker("", selection: $selection)
-                            .scaleEffect(x: 4.2, y: 1)
-                            .focusable(false)
-                            .offset(x: -17)
-                            .mask(
-                                Rectangle()
-                                    .frame(height: 1)
-                                    .offset(y: 15)
-                            )
-                    )
-                    .mask(Rectangle().frame(width: 184, height: 24))
+                Button(action: {
+                    panel = true
+                }, label: {
+                    Text("Show Colors...").frame(width: 165)
+                })
+                .focusable(false)
+                .sheet(isPresented: $panel) {
+                    ColorPanelWrapper(selection: $selection).frame(width: 0, height: 0)
+                }
             }
         }
     }
@@ -184,5 +182,39 @@ extension String {
         let blue = CGFloat(rgbValue & 0x0000FF) / 255.0
         
         return Color(NSColor(displayP3Red: red, green: green, blue: blue, alpha: 1.0))
+    }
+}
+
+struct ColorPanelWrapper: NSViewRepresentable {
+    @Binding var selection: Color
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    func makeNSView(context: Context) -> NSView {
+        let nsView = NSView()
+        let colorPanel = NSColorPanel.shared
+        colorPanel.setTarget(context.coordinator)
+        colorPanel.setAction(#selector(Coordinator.colorDidChange))
+        colorPanel.isContinuous = true
+        colorPanel.makeKeyAndOrderFront(nil)
+        
+        return nsView
+    }
+    
+    func updateNSView(_ nsView: NSView, context: Context) {}
+    
+    class Coordinator: NSObject {
+        var parent: ColorPanelWrapper
+        
+        init(_ parent: ColorPanelWrapper) {
+            self.parent = parent
+        }
+        
+        @objc func colorDidChange() {
+            let nsColor = NSColorPanel.shared.color
+            parent.selection = Color(nsColor)
+        }
     }
 }
