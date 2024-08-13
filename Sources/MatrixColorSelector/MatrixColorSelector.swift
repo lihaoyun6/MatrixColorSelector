@@ -23,22 +23,18 @@ public struct MatrixColorSelector: View {
                 popover = true
             }, label: {
                 ZStack {
-                    //RoundedRectangle(cornerRadius: 5, style: .continuous)
-                    //.fill(popover ? Color(NSColor(white: 0.8, alpha: 1)) : Color(NSColor.controlColor))
-                    //.shadow(radius: 1, y: 0.5)
                     RoundedRectangle(cornerRadius: 2, style: .continuous)
                         .fill(selection)
                         .frame(width: 38, height: 17)
                         .overlay(
-                            RoundedRectangle(cornerRadius: 2, style: .continuous)
+                            RoundedRectangle(cornerRadius: 2.5, style: .continuous)
                             .stroke(lineWidth: 1)
                             .opacity(0.25)
                         )
-                        .mask(RoundedRectangle(cornerRadius: 2, style: .continuous))
+                        .mask(RoundedRectangle(cornerRadius: 2.5, style: .continuous))
                         .padding([.leading, .trailing], -5).padding([.top, .bottom], 2)
                 }
             })
-            //.buttonStyle(.plain)
             .foregroundColor(.red)
             .frame(width: 44, height: 23)
             .popover(isPresented: $popover, arrowEdge: .bottom) {
