@@ -49,7 +49,6 @@ public struct MatrixColorSelector: View {
 }
 
 public struct MatrixColorSelectorView: View {
-    @Environment(\.presentationMode) var presentationMode
     @State private var panel: Bool = false
     @Binding var selection: Color
     var noMoreColors: Bool
