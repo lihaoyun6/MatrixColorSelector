@@ -23,16 +23,35 @@ public struct MatrixColorSelector: View {
                 popover = true
             }, label: {
                 ZStack {
-                    RoundedRectangle(cornerRadius: 2, style: .continuous)
-                        .fill(selection)
-                        .frame(width: 38, height: 17)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 2.5, style: .continuous)
-                            .stroke(lineWidth: 1)
-                            .opacity(0.25)
-                        )
-                        .mask(RoundedRectangle(cornerRadius: 2.5, style: .continuous))
-                        .padding([.leading, .trailing], -5).padding([.top, .bottom], 2)
+                    if selection != .clear {
+                        RoundedRectangle(cornerRadius: 2, style: .continuous)
+                            .fill(selection)
+                            .frame(width: 38, height: 17)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 2.5, style: .continuous)
+                                    .stroke(lineWidth: 1)
+                                    .opacity(0.25)
+                            )
+                            .mask(RoundedRectangle(cornerRadius: 2.5, style: .continuous))
+                            .padding([.leading, .trailing], -5).padding([.top, .bottom], 2)
+                    } else {
+                        RoundedRectangle(cornerRadius: 2, style: .continuous)
+                            .fill(.white)
+                            .frame(width: 38, height: 17)
+                            .overlay(
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 2.5, style: .continuous)
+                                        .stroke(lineWidth: 1)
+                                        .opacity(0.25)
+                                    Rectangle()
+                                        .fill(.red)
+                                        .frame(height: 1)
+                                        .rotationEffect(Angle(degrees: -22))
+                                }
+                            )
+                            .mask(RoundedRectangle(cornerRadius: 2.5, style: .continuous))
+                            .padding([.leading, .trailing], -5).padding([.top, .bottom], 2)
+                    }
                 }
             })
             .foregroundColor(.red)
@@ -183,9 +202,7 @@ extension String {
 struct ColorPanelWrapper: NSViewRepresentable {
     @Binding var selection: Color
     
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
+    func makeCoordinator() -> Coordinator { Coordinator(self) }
     
     func makeNSView(context: Context) -> NSView {
         let nsView = NSView()
@@ -194,7 +211,6 @@ struct ColorPanelWrapper: NSViewRepresentable {
         colorPanel.setAction(#selector(Coordinator.colorDidChange))
         colorPanel.isContinuous = true
         colorPanel.makeKeyAndOrderFront(nil)
-        
         return nsView
     }
     
