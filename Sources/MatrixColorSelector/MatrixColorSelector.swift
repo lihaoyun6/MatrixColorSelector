@@ -127,6 +127,9 @@ public struct MatrixColorSelectorView: View {
                                 NotificationCenter.default.removeObserver(self, name: NSWindow.willCloseNotification, object: NSColorPanel.shared)
                                 panel = false
                             }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                NSColorPanel.shared.makeKeyAndOrderFront(nil)
+                            }
                         }
                 }
             }
