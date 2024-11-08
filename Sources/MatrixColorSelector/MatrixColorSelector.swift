@@ -7,27 +7,20 @@ import AppKit
 public struct MatrixColorSelector: View {
     @Binding var selection: Color
     @State private var popover: Bool = false
-    @State private var sheet: Bool = false
     var titleKey: LocalizedStringKey
     var noMoreColors: Bool
-    var sheetMode: Bool
     
-    public init(_ titleKey: LocalizedStringKey, selection: Binding<Color>, noMoreColors: Bool = false, sheetMode: Bool = false) {
+    public init(_ titleKey: LocalizedStringKey, selection: Binding<Color>, noMoreColors: Bool = false) {
         self.titleKey = titleKey
         self._selection = selection
         self.noMoreColors = noMoreColors
-        self.sheetMode = sheetMode
     }
     
     public var body: some View {
         HStack {
             if titleKey != "" { Text(titleKey) }
             Button(action: {
-                if sheetMode {
-                    sheet = true
-                } else {
-                    popover = true
-                }
+                popover = true
             }, label: {
                 ZStack {
                     if selection != .clear {
@@ -66,9 +59,6 @@ public struct MatrixColorSelector: View {
             .popover(isPresented: $popover, arrowEdge: .bottom) {
                 MatrixColorSelectorView(selection: $selection, noMoreColors: noMoreColors).padding(10)
             }
-            .sheet(isPresented: $sheet) {
-                MatrixColorSelectorView(selection: $selection, noMoreColors: noMoreColors, sheetMode: true).padding(10)
-            }
         }
     }
 }
@@ -78,7 +68,6 @@ public struct MatrixColorSelectorView: View {
     @State private var panel: Bool = false
     @Binding var selection: Color
     var noMoreColors: Bool
-    var sheetMode: Bool
     private var colorPreset: [Color] = [.red, Color(.orange), Color(.yellow), Color(.green), Color(.cyan), Color(.blue), Color(NSColor.magenta), Color(.purple), Color(.brown), .white, .gray, .black]
     private var colorMatrix: [[Color?]] = [
         [.clear, "133648".color, "1f4d62".color, "2f6c8c".color, "3c8ab1".color, "48a0d2".color, "59c4f7".color, "79d2f8".color, "a6e2fa".color, "d2f0fd".color],
@@ -94,25 +83,13 @@ public struct MatrixColorSelectorView: View {
         [Color(NSColor(white: 0.1, alpha: 1)), "505518".color, "707624".color, "9da537".color, "c6d046".color, "dceb5c".color, "e6ef79".color, "edf29b".color, "f3f6bf".color, "f8fadf".color],
         [.black, "2b3d16".color, "3f5623".color, "587933".color, "729b45".color, "86b954".color, "a3d16e".color, "badd95".color, "d2e6b9".color, "e3ecd6".color]]
     
-    public init(selection: Binding<Color>, noMoreColors: Bool = false, sheetMode: Bool = false) {
+    public init(selection: Binding<Color>, noMoreColors: Bool = false) {
         self._selection = selection
         self.noMoreColors = noMoreColors
-        self.sheetMode = sheetMode
     }
     
     public var body: some View {
         VStack(spacing: 6) {
-            if sheetMode {
-                Rectangle()
-                    .fill(selection)
-                    .frame(width: 179, height: 14)
-                    .overlay(
-                        Rectangle()
-                            .stroke(lineWidth: 1)
-                            .opacity(0.3)
-                            .padding(0.5)
-                    )
-            }
             HStack(spacing: 1) {
                 ForEach(colorPreset, id: \.self) { color in
                     ColorCellButton(color: color, selection: $selection)
@@ -139,30 +116,18 @@ public struct MatrixColorSelectorView: View {
                 })
                 .focusable(false)
                 .sheet(isPresented: $panel) {
-                    ZStack {
-                        ColorPanelWrapper(selection: $selection).frame(width: 0, height: 0)
-                        GroupBox {
-                            Button(action: {
-                                NSColorPanel.shared.close()
-                                presentationMode.wrappedValue.dismiss()
-                            }, label: {
-                                Text("Go Back")
-                            })
-                            .keyboardShortcut(.defaultAction)
-                            .focusable(false)
-                            .padding()
-                        }.padding(5)
-                    }
-                }
-                if sheetMode {
-                    Button(action: {
-                        NSColorPanel.shared.close()
-                        presentationMode.wrappedValue.dismiss()
-                    }, label: {
-                        Text("Go Back").frame(width: 165)
-                    })
-                    .keyboardShortcut(.defaultAction)
-                    .focusable(false)
+                    ColorPanelWrapper(selection: $selection)
+                        .frame(width: 0, height: 0)
+                        .onAppear {
+                            NotificationCenter.default.addObserver(
+                                forName: NSWindow.willCloseNotification,
+                                object: NSColorPanel.shared,
+                                queue: .main
+                            ) { _ in
+                                NotificationCenter.default.removeObserver(self, name: NSWindow.willCloseNotification, object: NSColorPanel.shared)
+                                panel = false
+                            }
+                        }
                 }
             }
         }
